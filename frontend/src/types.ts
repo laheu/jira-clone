@@ -56,6 +56,15 @@ export interface Transition {
   targetStatus: StatusRef | null;
 }
 
+export interface Attachment {
+  id: number;
+  filename: string;
+  mimeType: string;
+  size: number;
+  author: UserRef | null;
+  created: string;
+}
+
 export interface IssueDetail extends IssueSummary {
   description: string | null;
   resolution: string | null;
@@ -64,6 +73,9 @@ export interface IssueDetail extends IssueSummary {
   resolutionDate: string | null;
   comments: Comment[];
   transitions: Transition[];
+  parent: IssueSummary | null;
+  children: IssueSummary[];
+  attachments: Attachment[];
 }
 
 export interface Page<T> {
@@ -77,4 +89,9 @@ export interface Meta {
   statuses: StatusRef[];
   types: TypeRef[];
   priorities: PriorityRef[];
+}
+
+export interface ProjectMeta {
+  statuses: StatusRef[];
+  types: TypeRef[];
 }

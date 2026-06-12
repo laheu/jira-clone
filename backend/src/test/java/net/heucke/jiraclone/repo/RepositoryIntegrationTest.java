@@ -25,6 +25,9 @@ class RepositoryIntegrationTest {
     @Autowired
     private IssueService issueService;
 
+    @Autowired
+    private MetaRepository metaRepository;
+
     @Test
     void listsAllProjectsWithIssueCounts() {
         var projects = projectRepository.findAll();
@@ -35,12 +38,12 @@ class RepositoryIntegrationTest {
         assertThat(projects).filteredOn(p -> p.key().equals("DEMO"))
                 .singleElement()
                 .extracting(Rows.ProjectRow::issueCount)
-                .isEqualTo(12L);
+                .isEqualTo(13L);
     }
 
     @Test
     void searchSupportsFiltersAndPaging() {
-        assertThat(issueRepository.count("DEMO", null, null, null)).isEqualTo(12);
+        assertThat(issueRepository.count("DEMO", null, null, null)).isEqualTo(13);
         assertThat(issueRepository.search("demo", null, null, null, 0, 5)).hasSize(5);
 
         assertThat(issueRepository.search("DEMO", "1", null, null, 0, 50))
@@ -83,10 +86,51 @@ class RepositoryIntegrationTest {
     }
 
     @Test
+    void epicShowsChildrenFromLinksAndEpicLinkField() {
+        IssueDetailDto epic = issueService.get("DEMO-8");
+
+        // DEMO-2/9/12 via Epic-Story issue links, DEMO-3 via the Epic Link custom field
+        assertThat(epic.children()).extracting(c -> c.key())
+                .containsExactly("DEMO-2", "DEMO-3", "DEMO-9", "DEMO-12");
+        // parent via Advanced Roadmaps Parent Link custom field
+        assertThat(epic.parent().key()).isEqualTo("DEMO-13");
+    }
+
+    @Test
+    void storyKnowsItsEpicAndNonHierarchicalLinksAreIgnored() {
+        assertThat(issueService.get("DEMO-2").parent().key()).isEqualTo("DEMO-8");
+        assertThat(issueService.get("DEMO-3").parent().key()).isEqualTo("DEMO-8");
+
+        // DEMO-1 only has a "Relates" link to DEMO-2 - no hierarchy
+        IssueDetailDto unrelated = issueService.get("DEMO-1");
+        assertThat(unrelated.children()).isEmpty();
+        assertThat(unrelated.parent()).isNull();
+    }
+
+    @Test
+    void projectMetaOnlyContainsValuesUsedInProject() {
+        // OPS issues only use statuses Open/In Progress/Resolved and types Bug/Task
+        assertThat(metaRepository.listProjectStatuses("OPS")).extracting(Rows.StatusRow::name)
+                .containsExactly("Open", "In Progress", "Resolved");
+        assertThat(metaRepository.listProjectTypes("OPS")).extracting(Rows.TypeRow::name)
+                .containsExactly("Bug", "Task");
+    }
+
+    @Test
+    void issueDetailListsAttachments() {
+        IssueDetailDto issue = issueService.get("DEMO-1");
+
+        assertThat(issue.attachments()).hasSize(2);
+        assertThat(issue.attachments().getFirst().filename()).isEqualTo("screenshot-fehler.svg");
+        assertThat(issue.attachments().getFirst().mimeType()).isEqualTo("image/svg+xml");
+        assertThat(issue.attachments().getFirst().author().displayName()).isEqualTo("Anna Schmidt");
+    }
+
+    @Test
     void issueListResolvesAssigneesAndOrdersByUpdated() {
         PageDto<IssueSummaryDto> page = issueService.search("DEMO", null, null, null, 0, 3);
 
-        assertThat(page.total()).isEqualTo(12);
+        assertThat(page.total()).isEqualTo(13);
         assertThat(page.items()).hasSize(3);
         // DEMO-12 has the most recent "updated" timestamp in the seed data
         assertThat(page.items().getFirst().key()).isEqualTo("DEMO-12");

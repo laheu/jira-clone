@@ -39,6 +39,15 @@ public final class Rows {
     public record StatusRow(String id, String name, Integer category) {
     }
 
+    public record AttachmentRow(long id, long issueId, String filename, String mimeType,
+                                long fileSize, String authorKey, Timestamp created,
+                                String projectKey, long issueNum) {
+
+        public String issueKey() {
+            return projectKey + "-" + issueNum;
+        }
+    }
+
     public record TypeRow(String id, String name) {
     }
 

@@ -17,6 +17,11 @@ DROP TABLE IF EXISTS jiraworkflows;
 DROP TABLE IF EXISTS workflowscheme;
 DROP TABLE IF EXISTS workflowschemeentity;
 DROP TABLE IF EXISTS nodeassociation;
+DROP TABLE IF EXISTS issuelink;
+DROP TABLE IF EXISTS issuelinktype;
+DROP TABLE IF EXISTS customfield;
+DROP TABLE IF EXISTS customfieldvalue;
+DROP TABLE IF EXISTS fileattachment;
 
 CREATE TABLE project (
     id            NUMBER(18,0) PRIMARY KEY,
@@ -188,4 +193,49 @@ CREATE TABLE nodeassociation (
     sink_node_entity   VARCHAR2(60),
     association_type   VARCHAR2(60),
     sequence           NUMBER(9,0)
+);
+
+CREATE TABLE issuelinktype (
+    id       NUMBER(18,0) PRIMARY KEY,
+    linkname VARCHAR2(255),
+    inward   VARCHAR2(255),
+    outward  VARCHAR2(255),
+    pstyle   VARCHAR2(60)
+);
+
+CREATE TABLE issuelink (
+    id          NUMBER(18,0) PRIMARY KEY,
+    linktype    NUMBER(18,0),
+    source      NUMBER(18,0),
+    destination NUMBER(18,0),
+    sequence    NUMBER(18,0)
+);
+
+CREATE TABLE customfield (
+    id                 NUMBER(18,0) PRIMARY KEY,
+    customfieldtypekey VARCHAR2(255),
+    cfname             VARCHAR2(255)
+);
+
+CREATE TABLE customfieldvalue (
+    id          NUMBER(18,0) PRIMARY KEY,
+    issue       NUMBER(18,0),
+    customfield NUMBER(18,0),
+    stringvalue VARCHAR2(255),
+    numbervalue NUMBER(18,6),
+    textvalue   CLOB,
+    datevalue   TIMESTAMP,
+    valuetype   VARCHAR2(255)
+);
+
+CREATE TABLE fileattachment (
+    id            NUMBER(18,0) PRIMARY KEY,
+    issueid       NUMBER(18,0),
+    mimetype      VARCHAR2(255),
+    filename      VARCHAR2(255),
+    created       TIMESTAMP,
+    filesize      NUMBER(18,0),
+    author        VARCHAR2(255),
+    zip           NUMBER(9,0),
+    thumbnailable NUMBER(9,0)
 );

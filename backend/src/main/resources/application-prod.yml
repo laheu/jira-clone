@@ -19,3 +19,7 @@ app:
     username: ${APP_AUTH_USERNAME}
     # Use a password encoder prefix, e.g. "{bcrypt}$2a$10$..." (or "{noop}..." for tests only)
     password: ${APP_AUTH_PASSWORD}
+  jira:
+    # Path to Jira's attachment store (<jira-home>/data/attachments), e.g. a read-only
+    # mount of the Jira server's filesystem. Leave empty to disable attachment downloads.
+    attachments-dir: ${JIRA_ATTACHMENTS_DIR:}

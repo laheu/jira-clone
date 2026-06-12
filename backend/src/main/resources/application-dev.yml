@@ -20,3 +20,6 @@ app:
     # Single local test user; CHANGE for anything beyond local testing.
     username: admin
     password: "{noop}admin"
+  jira:
+    # Demo attachment store using Jira's directory layout (<key>/<bucket>/<issue-key>/<id>)
+    attachments-dir: ./dev-attachments

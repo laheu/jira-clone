@@ -3,6 +3,10 @@ package net.heucke.jiraclone.web;
 import net.heucke.jiraclone.api.Dtos.IssueSummaryDto;
 import net.heucke.jiraclone.api.Dtos.PageDto;
 import net.heucke.jiraclone.api.Dtos.ProjectDto;
+import net.heucke.jiraclone.api.Dtos.ProjectMetaDto;
+import net.heucke.jiraclone.api.Dtos.StatusRef;
+import net.heucke.jiraclone.api.Dtos.TypeRef;
+import net.heucke.jiraclone.repo.MetaRepository;
 import net.heucke.jiraclone.service.IssueService;
 import net.heucke.jiraclone.service.ProjectService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,10 +23,13 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final IssueService issueService;
+    private final MetaRepository metaRepository;
 
-    public ProjectController(ProjectService projectService, IssueService issueService) {
+    public ProjectController(ProjectService projectService, IssueService issueService,
+                             MetaRepository metaRepository) {
         this.projectService = projectService;
         this.issueService = issueService;
+        this.metaRepository = metaRepository;
     }
 
     @GetMapping
@@ -33,6 +40,18 @@ public class ProjectController {
     @GetMapping("/{key}")
     public ProjectDto get(@PathVariable String key) {
         return projectService.get(key);
+    }
+
+    /** Filter values (statuses, types) restricted to what actually occurs in the project. */
+    @GetMapping("/{key}/meta")
+    public ProjectMetaDto meta(@PathVariable String key) {
+        return new ProjectMetaDto(
+                metaRepository.listProjectStatuses(key).stream()
+                        .map(s -> StatusRef.of(s.id(), s.name(), s.category()))
+                        .toList(),
+                metaRepository.listProjectTypes(key).stream()
+                        .map(t -> new TypeRef(t.id(), t.name()))
+                        .toList());
     }
 
     @GetMapping("/{key}/issues")

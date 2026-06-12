@@ -50,17 +50,27 @@ public final class Dtos {
     public record TransitionDto(int id, String name, StatusRef targetStatus) {
     }
 
+    public record AttachmentDto(long id, String filename, String mimeType, long size,
+                                UserRef author, Instant created) {
+    }
+
     public record IssueDetailDto(String key, String summary, String description,
                                  TypeRef type, StatusRef status, PriorityRef priority,
                                  String resolution, UserRef assignee, UserRef reporter,
                                  List<String> labels,
                                  Instant created, Instant updated, LocalDate dueDate, Instant resolutionDate,
-                                 List<CommentDto> comments, List<TransitionDto> transitions) {
+                                 List<CommentDto> comments, List<TransitionDto> transitions,
+                                 IssueSummaryDto parent, List<IssueSummaryDto> children,
+                                 List<AttachmentDto> attachments) {
     }
 
     public record PageDto<T>(List<T> items, int page, int size, long total) {
     }
 
     public record MetaDto(List<StatusRef> statuses, List<TypeRef> types, List<PriorityRef> priorities) {
+    }
+
+    /** Statuses and types that actually occur in one project (for filter dropdowns). */
+    public record ProjectMetaDto(List<StatusRef> statuses, List<TypeRef> types) {
     }
 }

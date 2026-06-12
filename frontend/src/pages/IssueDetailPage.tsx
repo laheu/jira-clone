@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ApiError, getIssue } from '../api';
-import { PriorityLabel, StatusBadge, UserName, formatDate, formatDateTime } from '../components';
+import { ApiError, attachmentUrl, getIssue } from '../api';
+import {
+  BodyText,
+  PriorityLabel,
+  StatusBadge,
+  UserName,
+  formatBytes,
+  formatDate,
+  formatDateTime,
+} from '../components';
 import type { IssueDetail } from '../types';
 
 export default function IssueDetailPage() {
@@ -34,6 +42,16 @@ export default function IssueDetailPage() {
         <span>{issue.key}</span>
       </nav>
 
+      {issue.parent && (
+        <div className="parent-line">
+          {issue.parent.type.name}:{' '}
+          <Link to={`/issues/${issue.parent.key}`} className="issue-key">
+            {issue.parent.key}
+          </Link>{' '}
+          {issue.parent.summary}
+        </div>
+      )}
+
       <div className="issue-header">
         <h1>
           <span className="issue-key">{issue.key}</span> {issue.summary}
@@ -46,11 +64,62 @@ export default function IssueDetailPage() {
           <section>
             <h2>Beschreibung</h2>
             {issue.description ? (
-              <p className="issue-description">{issue.description}</p>
+              <BodyText text={issue.description} attachments={issue.attachments} />
             ) : (
               <p className="muted">Keine Beschreibung vorhanden.</p>
             )}
           </section>
+
+          {issue.children.length > 0 && (
+            <section>
+              <h2>Untergeordnete Vorgänge ({issue.children.length})</h2>
+              <ul className="child-list">
+                {issue.children.map((child) => (
+                  <li key={child.key} className="child-row">
+                    <Link className="issue-key" to={`/issues/${child.key}`}>
+                      {child.key}
+                    </Link>
+                    <span className="child-type muted">{child.type.name}</span>
+                    <Link className="issue-summary child-summary" to={`/issues/${child.key}`}>
+                      {child.summary}
+                    </Link>
+                    <StatusBadge status={child.status} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {issue.attachments.length > 0 && (
+            <section>
+              <h2>Anhänge ({issue.attachments.length})</h2>
+              <div className="attachment-grid">
+                {issue.attachments.map((attachment) => (
+                  <a
+                    key={attachment.id}
+                    className="attachment-card"
+                    href={attachmentUrl(attachment.id)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {attachment.mimeType.startsWith('image/') ? (
+                      <img
+                        className="attachment-thumb"
+                        src={attachmentUrl(attachment.id)}
+                        alt={attachment.filename}
+                      />
+                    ) : (
+                      <div className="attachment-thumb attachment-file">📄</div>
+                    )}
+                    <div className="attachment-name">{attachment.filename}</div>
+                    <div className="muted small">
+                      {formatBytes(attachment.size)} · {formatDateTime(attachment.created)}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
 
           {issue.transitions.length > 0 && (
             <section>
@@ -88,7 +157,7 @@ export default function IssueDetailPage() {
                       </strong>
                       <span className="muted">{formatDateTime(comment.created)}</span>
                     </div>
-                    <p>{comment.body}</p>
+                    <BodyText text={comment.body} attachments={issue.attachments} className="comment-body" />
                   </li>
                 ))}
               </ul>

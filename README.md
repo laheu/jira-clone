@@ -10,10 +10,16 @@ Datenbank aus.
 - **Login** mit einem einzelnen, lokal konfigurierten Benutzer (kein LDAP). Dieser Benutzer
   sieht alle Projekte und Vorgänge – Jira-Berechtigungsschemata werden nicht ausgewertet.
 - **Projektübersicht** mit Projektleitung und Vorgangsanzahl
-- **Vorgangsliste** pro Projekt mit Filtern (Status, Typ), Volltextsuche auf der
-  Zusammenfassung und Paginierung
+- **Vorgangsliste** pro Projekt mit Filtern (Status, Typ – nur die im Projekt tatsächlich
+  vorkommenden Werte), Volltextsuche auf der Zusammenfassung und Paginierung
 - **Vorgangsdetails**: Beschreibung, Bearbeiter/Autor (aufgelöst über `app_user`/`cwd_user`),
   Priorität, Lösung, Labels, Kommentare
+- **Hierarchie** (z. B. Initiative > Epic > Story): übergeordneter Vorgang und Liste der
+  untergeordneten Vorgänge. Ausgewertet werden Epic-Story-/Subtask-Issue-Links sowie die
+  Custom Fields „Epic Link" und „Parent Link" (Advanced Roadmaps).
+- **Anhänge**: Auflistung und Download/Anzeige (Metadaten aus `fileattachment`, Dateien aus
+  Jiras Attachment-Verzeichnis); Bilder werden als Vorschau und – bei Wiki-Referenzen wie
+  `!screenshot.png!` – inline in Beschreibung/Kommentaren angezeigt
 - **Workflow-Übergänge (nur Anzeige)**: Die möglichen Transitionen des aktuellen Status
   werden aus dem OSWorkflow-XML-Descriptor (`jiraworkflows`) geparst und angezeigt –
   ausführen lassen sie sich bewusst nicht.
@@ -87,6 +93,13 @@ java -jar jira-clone-backend-0.1.0-SNAPSHOT.jar
 | `JIRA_DB_PASSWORD`  | Passwort des DB-Accounts                                         |
 | `APP_AUTH_USERNAME` | Login-Name des einen Anwendungsbenutzers                         |
 | `APP_AUTH_PASSWORD` | Passwort mit Encoder-Präfix, z. B. `{bcrypt}…` (`{noop}…` nur für Tests) |
+| `JIRA_ATTACHMENTS_DIR` | Optional: Pfad zu Jiras Attachment-Verzeichnis (`<jira-home>/data/attachments`), z. B. ein read-only NFS-Mount des Jira-Servers. Leer = Anhang-Download deaktiviert. |
+
+> **Hinweis zu Anhängen:** Jira speichert Anhänge nicht in der Datenbank, sondern im
+> Dateisystem unter `<jira-home>/data/attachments`. Damit der Clone sie ausliefern kann,
+> muss dieses Verzeichnis lesbar gemountet und über `JIRA_ATTACHMENTS_DIR` bekannt sein.
+> Unterstützt werden beide Jira-Verzeichnislayouts (`<KEY>/<bucket>/<KEY-Nr>/<id>` ab
+> Jira 8.1 sowie das ältere `<KEY>/<KEY-Nr>/<id>`).
 
 ## Tests
 

@@ -13,6 +13,7 @@ INSERT INTO issuetype (id, sequence, pname, pstyle, description, iconurl, avatar
 INSERT INTO issuetype (id, sequence, pname, pstyle, description, iconurl, avatar) VALUES ('3', 2, 'Task', NULL, 'Eine Aufgabe, die erledigt werden muss.', NULL, NULL);
 INSERT INTO issuetype (id, sequence, pname, pstyle, description, iconurl, avatar) VALUES ('10001', 3, 'Story', NULL, 'Eine Anforderung aus Nutzersicht.', NULL, NULL);
 INSERT INTO issuetype (id, sequence, pname, pstyle, description, iconurl, avatar) VALUES ('10000', 4, 'Epic', NULL, 'Ein grosses Arbeitspaket.', NULL, NULL);
+INSERT INTO issuetype (id, sequence, pname, pstyle, description, iconurl, avatar) VALUES ('10200', 5, 'Initiative', NULL, 'Strategisches Thema oberhalb von Epics.', NULL, NULL);
 
 INSERT INTO priority (id, sequence, pname, description, iconurl, status_color) VALUES ('1', 1, 'Blocker', 'Blockiert den Fortschritt.', NULL, '#d04437');
 INSERT INTO priority (id, sequence, pname, description, iconurl, status_color) VALUES ('2', 2, 'Critical', 'Absturz oder Datenverlust.', NULL, '#e3493b');
@@ -41,7 +42,7 @@ VALUES (10203, 1, 'maria.lopez', 'maria.lopez', 1, TIMESTAMP '2022-09-01 08:15:0
 
 -- ---------------------------------------------------------------- projects
 INSERT INTO project (id, pname, url, lead, description, pkey, pcounter, assigneetype, avatar, originalkey, projecttype)
-VALUES (10000, 'Demo Projekt', NULL, 'lars', 'Demonstrationsprojekt fuer den Jira-Clone.', 'DEMO', 12, 2, NULL, 'DEMO', 'software');
+VALUES (10000, 'Demo Projekt', NULL, 'lars', 'Demonstrationsprojekt fuer den Jira-Clone.', 'DEMO', 13, 2, NULL, 'DEMO', 'software');
 INSERT INTO project (id, pname, url, lead, description, pkey, pcounter, assigneetype, avatar, originalkey, projecttype)
 VALUES (10001, 'Website Relaunch', NULL, 'anna.schmidt', 'Neugestaltung der Unternehmens-Website.', 'WEB', 6, 2, NULL, 'WEB', 'software');
 INSERT INTO project (id, pname, url, lead, description, pkey, pcounter, assigneetype, avatar, originalkey, projecttype)
@@ -126,7 +127,9 @@ INSERT INTO jiraworkflows (id, workflowname, creatorname, descriptor, islocked) 
 
 -- ---------------------------------------------------------------- issues: DEMO (project 10000, ids 20001-20012)
 INSERT INTO jiraissue (id, issuenum, project, reporter, assignee, creator, issuetype, summary, description, priority, resolution, issuestatus, created, updated, duedate, resolutiondate, votes, watches, workflow_id)
-VALUES (20001, 1, 10000, 'anna.schmidt', 'lars', 'anna.schmidt', '1', 'Login-Seite zeigt Fehler 500 bei falschem Passwort', 'Beim Login mit einem falschen Passwort erscheint statt einer Fehlermeldung ein HTTP-500-Fehler. Erwartet wird eine Meldung wie "Benutzername oder Passwort falsch".', '2', NULL, '1', TIMESTAMP '2026-05-02 09:12:00', TIMESTAMP '2026-06-10 16:40:00', NULL, NULL, 3, 5, 30001);
+VALUES (20001, 1, 10000, 'anna.schmidt', 'lars', 'anna.schmidt', '1', 'Login-Seite zeigt Fehler 500 bei falschem Passwort', 'Beim Login mit einem falschen Passwort erscheint statt einer Fehlermeldung ein HTTP-500-Fehler. Erwartet wird eine Meldung wie "Benutzername oder Passwort falsch".
+
+Screenshot des Fehlers: !screenshot-fehler.svg!', '2', NULL, '1', TIMESTAMP '2026-05-02 09:12:00', TIMESTAMP '2026-06-10 16:40:00', NULL, NULL, 3, 5, 30001);
 INSERT INTO jiraissue (id, issuenum, project, reporter, assignee, creator, issuetype, summary, description, priority, resolution, issuestatus, created, updated, duedate, resolutiondate, votes, watches, workflow_id)
 VALUES (20002, 2, 10000, 'lars', 'tom.weber', 'lars', '3', 'Datenbank-Backup automatisieren', 'Naechtliches Backup der Oracle-Datenbank per Cronjob einrichten und Wiederherstellung dokumentieren.', '3', NULL, '3', TIMESTAMP '2026-05-03 11:00:00', TIMESTAMP '2026-06-11 09:05:00', TIMESTAMP '2026-06-30 00:00:00', NULL, 0, 2, 30002);
 INSERT INTO jiraissue (id, issuenum, project, reporter, assignee, creator, issuetype, summary, description, priority, resolution, issuestatus, created, updated, duedate, resolutiondate, votes, watches, workflow_id)
@@ -174,6 +177,38 @@ VALUES (20021, 3, 10002, 'tom.weber', 'JIRAUSER10103', 'tom.weber', '3', 'Patch-
 INSERT INTO jiraissue (id, issuenum, project, reporter, assignee, creator, issuetype, summary, description, priority, resolution, issuestatus, created, updated, duedate, resolutiondate, votes, watches, workflow_id)
 VALUES (20022, 4, 10002, 'JIRAUSER10103', NULL, 'JIRAUSER10103', '3', 'Alte Fileserver-Freigaben archivieren', 'Nicht mehr genutzte Shares identifizieren und archivieren.', '5', NULL, '1', TIMESTAMP '2026-05-30 09:00:00', TIMESTAMP '2026-06-03 11:30:00', NULL, NULL, 0, 0, 30022);
 
+-- DEMO-13: Initiative oberhalb des Epics DEMO-8
+INSERT INTO jiraissue (id, issuenum, project, reporter, assignee, creator, issuetype, summary, description, priority, resolution, issuestatus, created, updated, duedate, resolutiondate, votes, watches, workflow_id)
+VALUES (20023, 13, 10000, 'lars', 'lars', 'lars', '10200', 'Modernisierung der IT-Landschaft', 'Initiative: Buendelt alle Epics zur Modernisierung von Infrastruktur und Anwendungen.', '2', NULL, '3', TIMESTAMP '2026-03-01 08:00:00', TIMESTAMP '2026-06-11 07:50:00', TIMESTAMP '2026-12-31 00:00:00', NULL, 0, 5, 30023);
+
+-- ---------------------------------------------------------------- hierarchy: link types, links, custom fields
+INSERT INTO issuelinktype (id, linkname, inward, outward, pstyle) VALUES (10500, 'Epic-Story Link', 'has Epic', 'is Epic of', 'jira_gh_epic_story');
+INSERT INTO issuelinktype (id, linkname, inward, outward, pstyle) VALUES (10501, 'jira_subtask_link', 'jira_subtask_inward', 'jira_subtask_outward', 'jira_subtask');
+INSERT INTO issuelinktype (id, linkname, inward, outward, pstyle) VALUES (10502, 'Relates', 'relates to', 'relates to', NULL);
+
+-- Epic DEMO-8 -> Stories/Tasks (per Epic-Story-Link)
+INSERT INTO issuelink (id, linktype, source, destination, sequence) VALUES (10600, 10500, 20008, 20002, NULL);
+INSERT INTO issuelink (id, linktype, source, destination, sequence) VALUES (10601, 10500, 20008, 20009, NULL);
+INSERT INTO issuelink (id, linktype, source, destination, sequence) VALUES (10602, 10500, 20008, 20012, NULL);
+-- Epic WEB-1 -> Stories/Tasks
+INSERT INTO issuelink (id, linktype, source, destination, sequence) VALUES (10603, 10500, 20013, 20014, NULL);
+INSERT INTO issuelink (id, linktype, source, destination, sequence) VALUES (10604, 10500, 20013, 20016, NULL);
+INSERT INTO issuelink (id, linktype, source, destination, sequence) VALUES (10605, 10500, 20013, 20017, NULL);
+-- Nicht-hierarchischer Link (darf NICHT als Kind erscheinen)
+INSERT INTO issuelink (id, linktype, source, destination, sequence) VALUES (10606, 10502, 20001, 20002, NULL);
+
+-- Custom Fields: Advanced-Roadmaps Parent Link (Initiative->Epic) und Epic Link
+INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10700, 'com.atlassian.jpo:jpo-custom-field-parent', 'Parent Link');
+INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10701, 'com.pyxis.greenhopper.jira:gh-epic-link', 'Epic Link');
+-- DEMO-8 haengt unter Initiative DEMO-13 (Parent Link speichert die Issue-ID als String)
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10800, 20008, 10700, '20023', NULL, NULL, NULL, NULL);
+-- DEMO-3 haengt per Epic-Link-Custom-Field unter Epic DEMO-8 (Epic Link speichert die Issue-ID als Zahl)
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10801, 20003, 10701, NULL, 20008, NULL, NULL, NULL);
+
+-- ---------------------------------------------------------------- attachments (Dateien liegen unter dev-attachments/)
+INSERT INTO fileattachment (id, issueid, mimetype, filename, created, filesize, author, zip, thumbnailable) VALUES (70001, 20001, 'image/svg+xml', 'screenshot-fehler.svg', TIMESTAMP '2026-05-02 09:15:00', 760, 'anna.schmidt', 0, 1);
+INSERT INTO fileattachment (id, issueid, mimetype, filename, created, filesize, author, zip, thumbnailable) VALUES (70002, 20001, 'text/plain', 'stacktrace.log', TIMESTAMP '2026-05-02 10:06:00', 230, 'lars', 0, 0);
+
 -- ---------------------------------------------------------------- workflow state per issue (step matches issuestatus)
 -- status 1 (Open) -> step 1, status 3 (In Progress) -> step 3, status 5 (Resolved) -> step 4, status 6 (Closed) -> step 6
 INSERT INTO os_currentstep (id, entry_id, step_id, action_id, owner, start_date, due_date, finish_date, status) VALUES (40001, 30001, 1, 0, NULL, TIMESTAMP '2026-05-02 09:12:00', NULL, NULL, NULL);
@@ -198,6 +233,7 @@ INSERT INTO os_currentstep (id, entry_id, step_id, action_id, owner, start_date,
 INSERT INTO os_currentstep (id, entry_id, step_id, action_id, owner, start_date, due_date, finish_date, status) VALUES (40020, 30020, 1, 0, NULL, TIMESTAMP '2026-05-28 13:10:00', NULL, NULL, NULL);
 INSERT INTO os_currentstep (id, entry_id, step_id, action_id, owner, start_date, due_date, finish_date, status) VALUES (40021, 30021, 4, 0, NULL, TIMESTAMP '2026-04-22 10:00:00', NULL, NULL, NULL);
 INSERT INTO os_currentstep (id, entry_id, step_id, action_id, owner, start_date, due_date, finish_date, status) VALUES (40022, 30022, 1, 0, NULL, TIMESTAMP '2026-05-30 09:00:00', NULL, NULL, NULL);
+INSERT INTO os_currentstep (id, entry_id, step_id, action_id, owner, start_date, due_date, finish_date, status) VALUES (40023, 30023, 3, 0, NULL, TIMESTAMP '2026-03-01 08:00:00', NULL, NULL, NULL);
 
 -- ---------------------------------------------------------------- comments
 INSERT INTO jiraaction (id, issueid, author, actiontype, actionlevel, rolelevel, actionbody, created, updateauthor, updated, actionnum)

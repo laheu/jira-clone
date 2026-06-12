@@ -33,6 +33,37 @@ public class MetaRepository {
                 .collect(Collectors.toMap(StatusRow::id, Function.identity(), (a, b) -> a));
     }
 
+    /** Statuses that actually occur on issues of the given project. */
+    public List<StatusRow> listProjectStatuses(String projectKey) {
+        return jdbc.query("""
+                        SELECT DISTINCT s.id, s.pname, s.statuscategory, s.sequence
+                        FROM jiraissue i
+                        JOIN project p ON p.id = i.project
+                        JOIN issuestatus s ON s.id = i.issuestatus
+                        WHERE p.pkey = ?
+                        ORDER BY s.sequence
+                        """,
+                (rs, rowNum) -> new StatusRow(
+                        rs.getString("id"),
+                        rs.getString("pname"),
+                        rs.getObject("statuscategory") instanceof Number n ? n.intValue() : null),
+                projectKey.toUpperCase(java.util.Locale.ROOT));
+    }
+
+    /** Issue types that actually occur on issues of the given project. */
+    public List<TypeRow> listProjectTypes(String projectKey) {
+        return jdbc.query("""
+                        SELECT DISTINCT t.id, t.pname, t.sequence
+                        FROM jiraissue i
+                        JOIN project p ON p.id = i.project
+                        JOIN issuetype t ON t.id = i.issuetype
+                        WHERE p.pkey = ?
+                        ORDER BY t.sequence
+                        """,
+                (rs, rowNum) -> new TypeRow(rs.getString("id"), rs.getString("pname")),
+                projectKey.toUpperCase(java.util.Locale.ROOT));
+    }
+
     public List<TypeRow> listTypes() {
         return jdbc.query("SELECT id, pname FROM issuetype ORDER BY sequence",
                 (rs, rowNum) -> new TypeRow(rs.getString("id"), rs.getString("pname")));

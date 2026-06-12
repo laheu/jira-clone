@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -59,5 +60,26 @@ class ApiSecurityTest {
 
         mockMvc.perform(get("/api/issues/UNKNOWN-1").session(session))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void servesAttachmentsFromJiraDirectoryLayout() throws Exception {
+        MvcResult login = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"admin\",\"password\":\"admin\"}"))
+                .andExpect(status().isOk())
+                .andReturn();
+        MockHttpSession session = (MockHttpSession) login.getRequest().getSession(false);
+
+        mockMvc.perform(get("/api/attachments/70001").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("image/svg+xml"));
+
+        mockMvc.perform(get("/api/attachments/99999").session(session))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/api/projects/DEMO/meta").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.types[?(@.name=='Initiative')]").exists());
     }
 }

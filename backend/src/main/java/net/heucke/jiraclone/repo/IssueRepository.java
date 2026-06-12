@@ -90,6 +90,15 @@ public class IssueRepository {
         return rows.stream().findFirst();
     }
 
+    public List<IssueRow> findByIds(java.util.Collection<Long> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        String placeholders = String.join(", ", java.util.Collections.nCopies(ids.size(), "?"));
+        return jdbc.query(SELECT + " WHERE i.id IN (" + placeholders + ") ORDER BY i.issuenum",
+                MAPPER, ids.toArray());
+    }
+
     /** System labels of an issue (custom label fields have a fieldid and are out of scope). */
     public List<String> findLabels(long issueId) {
         return jdbc.queryForList(

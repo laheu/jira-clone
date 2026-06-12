@@ -1,4 +1,4 @@
-import type { IssueDetail, IssueSummary, Meta, Page, Project } from './types';
+import type { IssueDetail, IssueSummary, Meta, Page, Project, ProjectMeta } from './types';
 
 export class ApiError extends Error {
   constructor(
@@ -71,3 +71,8 @@ export const getIssue = (issueKey: string) =>
   request<IssueDetail>(`/api/issues/${encodeURIComponent(issueKey)}`);
 
 export const getMeta = () => request<Meta>('/api/meta');
+
+export const getProjectMeta = (projectKey: string) =>
+  request<ProjectMeta>(`/api/projects/${encodeURIComponent(projectKey)}/meta`);
+
+export const attachmentUrl = (id: number) => `/api/attachments/${id}`;

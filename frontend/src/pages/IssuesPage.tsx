@@ -1,15 +1,15 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getIssues, getMeta, getProject } from '../api';
+import { getIssues, getProject, getProjectMeta } from '../api';
 import { PriorityLabel, StatusBadge, UserName, formatDateTime } from '../components';
-import type { IssueSummary, Meta, Page, Project } from '../types';
+import type { IssueSummary, Page, Project, ProjectMeta } from '../types';
 
 const PAGE_SIZE = 25;
 
 export default function IssuesPage() {
   const { projectKey = '' } = useParams();
   const [project, setProject] = useState<Project | null>(null);
-  const [meta, setMeta] = useState<Meta | null>(null);
+  const [meta, setMeta] = useState<ProjectMeta | null>(null);
   const [issues, setIssues] = useState<Page<IssueSummary> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +21,8 @@ export default function IssuesPage() {
 
   useEffect(() => {
     getProject(projectKey).then(setProject).catch(() => setProject(null));
-    getMeta().then(setMeta).catch(() => setMeta(null));
+    // only statuses/types that actually occur in this project
+    getProjectMeta(projectKey).then(setMeta).catch(() => setMeta(null));
   }, [projectKey]);
 
   useEffect(() => {
