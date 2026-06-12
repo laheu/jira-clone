@@ -37,12 +37,13 @@ frontend/  React + Vite + TypeScript – Single-Page-App
 
 ## Standalone testen (dev-Profil)
 
-Voraussetzungen: Java 21, Maven, Node.js 20+.
+Voraussetzungen: Java 21 und Node.js 20+ (Maven wird nicht benötigt – der mitgelieferte
+Maven Wrapper `./mvnw` lädt die passende Version automatisch herunter).
 
 ```bash
 # Terminal 1 – Backend (Port 8080)
 cd backend
-mvn spring-boot:run
+./mvnw spring-boot:run
 
 # Terminal 2 – Frontend mit Hot-Reload (Port 5173, Proxy auf 8080)
 cd frontend
@@ -57,7 +58,7 @@ Alternativ als ein einzelnes Artefakt:
 
 ```bash
 cd frontend && npm install && npm run build   # baut nach backend/src/main/resources/static
-cd ../backend && mvn package
+cd ../backend && ./mvnw package
 java -jar target/jira-clone-backend-0.1.0-SNAPSHOT.jar   # alles unter http://localhost:8080
 ```
 
@@ -90,7 +91,7 @@ java -jar jira-clone-backend-0.1.0-SNAPSHOT.jar
 ## Tests
 
 ```bash
-cd backend && mvn test
+cd backend && ./mvnw test
 ```
 
 Enthalten: Repository-Integrationstests gegen das H2-Dev-Schema (Key-Bildung, Filter,
