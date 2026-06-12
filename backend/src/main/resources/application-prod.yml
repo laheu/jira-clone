@@ -1,0 +1,21 @@
+# Production mode: connects READ-ONLY to the Oracle database of a running Jira 10.x.
+# Strongly recommended: use a dedicated Oracle account that only has SELECT grants
+# on the Jira schema, so writes are impossible at the database level.
+spring:
+  datasource:
+    url: ${JIRA_DB_URL}            # e.g. jdbc:oracle:thin:@//dbhost:1521/JIRAPDB
+    username: ${JIRA_DB_USERNAME}  # read-only account, NOT the Jira application user
+    password: ${JIRA_DB_PASSWORD}
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      read-only: true
+      maximum-pool-size: 5
+  sql:
+    init:
+      mode: never
+
+app:
+  auth:
+    username: ${APP_AUTH_USERNAME}
+    # Use a password encoder prefix, e.g. "{bcrypt}$2a$10$..." (or "{noop}..." for tests only)
+    password: ${APP_AUTH_PASSWORD}

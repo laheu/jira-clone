@@ -1,0 +1,22 @@
+# Standalone development mode: in-memory H2 database (Oracle compatibility mode)
+# with a subset of the Jira 10.x schema and demo data. No external systems needed.
+spring:
+  datasource:
+    url: jdbc:h2:mem:jiradb;MODE=Oracle;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/dev/schema.sql
+      data-locations: classpath:db/dev/data.sql
+  h2:
+    console:
+      enabled: true
+
+app:
+  auth:
+    # Single local test user; CHANGE for anything beyond local testing.
+    username: admin
+    password: "{noop}admin"
