@@ -59,8 +59,10 @@ public class ProjectController {
                                            @RequestParam(required = false) String status,
                                            @RequestParam(required = false) String type,
                                            @RequestParam(required = false) String q,
+                                           @RequestParam(defaultValue = "updated") String sort,
+                                           @RequestParam(defaultValue = "desc") String order,
                                            @RequestParam(defaultValue = "0") int page,
                                            @RequestParam(defaultValue = "25") int size) {
-        return issueService.search(key, status, type, q, page, size);
+        return issueService.search(key, status, type, q, sort, !"asc".equalsIgnoreCase(order), page, size);
     }
 }

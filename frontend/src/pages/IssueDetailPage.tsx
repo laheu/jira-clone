@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError, attachmentUrl, getIssue } from '../api';
 import {
@@ -201,6 +201,12 @@ export default function IssueDetailPage() {
                 </dd>
               </>
             )}
+            {issue.customFields.map((field) => (
+              <Fragment key={field.id}>
+                <dt>{field.name}</dt>
+                <dd>{field.value}</dd>
+              </Fragment>
+            ))}
           </dl>
         </aside>
       </div>

@@ -205,6 +205,29 @@ INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, 
 -- DEMO-3 haengt per Epic-Link-Custom-Field unter Epic DEMO-8 (Epic Link speichert die Issue-ID als Zahl)
 INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10801, 20003, 10701, NULL, 20008, NULL, NULL, NULL);
 
+-- ---------------------------------------------------------------- fachliche Custom Fields
+INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10702, 'com.atlassian.jira.plugin.system.customfieldtypes:select', 'Umgebung');
+INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10703, 'com.atlassian.jira.plugin.system.customfieldtypes:textfield', 'Kundennummer');
+INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10704, 'com.atlassian.jira.plugin.system.customfieldtypes:datepicker', 'Geplantes Release');
+INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10705, 'com.atlassian.jira.plugin.system.customfieldtypes:float', 'Story Points');
+INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10706, 'com.atlassian.jira.plugin.system.customfieldtypes:userpicker', 'Fachlicher Ansprechpartner');
+-- Rank-Feld (gh-lexo-rank) als Beispiel fuer ein internes Feld, das NICHT angezeigt werden soll
+INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10707, 'com.pyxis.greenhopper.jira:gh-lexo-rank', 'Rank');
+
+-- Optionen der Auswahlliste "Umgebung" (Select-Felder speichern die Options-ID in stringvalue)
+INSERT INTO customfieldoption (id, customfield, customfieldconfig, parentoptionid, sequence, customvalue, optiontype, disabled) VALUES (10900, 10702, NULL, NULL, 1, 'Produktion', NULL, 'N');
+INSERT INTO customfieldoption (id, customfield, customfieldconfig, parentoptionid, sequence, customvalue, optiontype, disabled) VALUES (10901, 10702, NULL, NULL, 2, 'Test', NULL, 'N');
+INSERT INTO customfieldoption (id, customfield, customfieldconfig, parentoptionid, sequence, customvalue, optiontype, disabled) VALUES (10902, 10702, NULL, NULL, 3, 'Entwicklung', NULL, 'N');
+
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10802, 20001, 10702, '10900', NULL, NULL, NULL, NULL);
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10803, 20001, 10705, NULL, 5, NULL, NULL, NULL);
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10804, 20001, 10706, 'anna.schmidt', NULL, NULL, NULL, NULL);
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10805, 20002, 10703, 'KD-4711', NULL, NULL, NULL, NULL);
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10806, 20003, 10705, NULL, 3, NULL, NULL, NULL);
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10807, 20015, 10702, '10901', NULL, NULL, NULL, NULL);
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10808, 20008, 10704, NULL, NULL, NULL, TIMESTAMP '2026-09-30 00:00:00', NULL);
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10809, 20001, 10707, '0|i0007b:', NULL, NULL, NULL, NULL);
+
 -- ---------------------------------------------------------------- attachments (Dateien liegen unter dev-attachments/)
 INSERT INTO fileattachment (id, issueid, mimetype, filename, created, filesize, author, zip, thumbnailable) VALUES (70001, 20001, 'image/svg+xml', 'screenshot-fehler.svg', TIMESTAMP '2026-05-02 09:15:00', 760, 'anna.schmidt', 0, 1);
 INSERT INTO fileattachment (id, issueid, mimetype, filename, created, filesize, author, zip, thumbnailable) VALUES (70002, 20001, 'text/plain', 'stacktrace.log', TIMESTAMP '2026-05-02 10:06:00', 230, 'lars', 0, 0);

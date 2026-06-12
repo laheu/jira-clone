@@ -21,6 +21,7 @@ DROP TABLE IF EXISTS issuelink;
 DROP TABLE IF EXISTS issuelinktype;
 DROP TABLE IF EXISTS customfield;
 DROP TABLE IF EXISTS customfieldvalue;
+DROP TABLE IF EXISTS customfieldoption;
 DROP TABLE IF EXISTS fileattachment;
 
 CREATE TABLE project (
@@ -226,6 +227,17 @@ CREATE TABLE customfieldvalue (
     textvalue   CLOB,
     datevalue   TIMESTAMP,
     valuetype   VARCHAR2(255)
+);
+
+CREATE TABLE customfieldoption (
+    id                NUMBER(18,0) PRIMARY KEY,
+    customfield       NUMBER(18,0),
+    customfieldconfig NUMBER(18,0),
+    parentoptionid    NUMBER(18,0),
+    sequence          NUMBER(18,0),
+    customvalue       VARCHAR2(255),
+    optiontype        VARCHAR2(60),
+    disabled          CHAR(1)
 );
 
 CREATE TABLE fileattachment (

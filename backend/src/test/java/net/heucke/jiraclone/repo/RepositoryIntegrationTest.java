@@ -44,15 +44,15 @@ class RepositoryIntegrationTest {
     @Test
     void searchSupportsFiltersAndPaging() {
         assertThat(issueRepository.count("DEMO", null, null, null)).isEqualTo(13);
-        assertThat(issueRepository.search("demo", null, null, null, 0, 5)).hasSize(5);
+        assertThat(issueRepository.search("demo", null, null, null, "updated", true, 0, 5)).hasSize(5);
 
-        assertThat(issueRepository.search("DEMO", "1", null, null, 0, 50))
+        assertThat(issueRepository.search("DEMO", "1", null, null, "updated", true, 0, 50))
                 .isNotEmpty()
                 .allMatch(row -> row.statusId().equals("1"));
-        assertThat(issueRepository.search("DEMO", null, "1", null, 0, 50))
+        assertThat(issueRepository.search("DEMO", null, "1", null, "updated", true, 0, 50))
                 .isNotEmpty()
                 .allMatch(row -> row.typeName().equals("Bug"));
-        assertThat(issueRepository.search("DEMO", null, null, "backup", 0, 50))
+        assertThat(issueRepository.search("DEMO", null, null, "backup", "updated", true, 0, 50))
                 .singleElement()
                 .extracting(IssueRow::issueKey)
                 .isEqualTo("DEMO-2");
@@ -127,8 +127,43 @@ class RepositoryIntegrationTest {
     }
 
     @Test
+    void searchSupportsSortingWithWhitelistedColumns() {
+        assertThat(issueRepository.search("DEMO", null, null, null, "key", false, 0, 1))
+                .singleElement().extracting(IssueRow::issueKey).isEqualTo("DEMO-1");
+        assertThat(issueRepository.search("DEMO", null, null, null, "key", true, 0, 1))
+                .singleElement().extracting(IssueRow::issueKey).isEqualTo("DEMO-13");
+        assertThat(issueRepository.search("DEMO", null, null, null, "summary", false, 0, 1))
+                .singleElement().extracting(IssueRow::summary).asString().startsWith("Als Nutzer");
+        // priority sorts by Jira's priority order (Blocker first), not alphabetically
+        assertThat(issueRepository.search("DEMO", null, null, null, "priority", false, 0, 1))
+                .singleElement().extracting(IssueRow::priorityName).isEqualTo("Critical");
+        // unknown sort fields fall back to "updated" instead of failing
+        assertThat(issueRepository.search("DEMO", null, null, null, "evil; DROP TABLE", true, 0, 1))
+                .singleElement().extracting(IssueRow::issueKey).isEqualTo("DEMO-12");
+    }
+
+    @Test
+    void customFieldsAreResolvedAndInternalFieldsHidden() {
+        IssueDetailDto issue = issueService.get("DEMO-1");
+
+        // select option, number and user picker resolved to display values
+        assertThat(issue.customFields())
+                .extracting(cf -> cf.name() + "=" + cf.value())
+                .containsExactly(
+                        "Fachlicher Ansprechpartner=Anna Schmidt",
+                        "Story Points=5",
+                        "Umgebung=Produktion");
+
+        // DEMO-8 carries Parent Link (internal, hidden) and a date field (shown)
+        IssueDetailDto epic = issueService.get("DEMO-8");
+        assertThat(epic.customFields())
+                .extracting(cf -> cf.name() + "=" + cf.value())
+                .containsExactly("Geplantes Release=30.09.2026");
+    }
+
+    @Test
     void issueListResolvesAssigneesAndOrdersByUpdated() {
-        PageDto<IssueSummaryDto> page = issueService.search("DEMO", null, null, null, 0, 3);
+        PageDto<IssueSummaryDto> page = issueService.search("DEMO", null, null, null, "updated", true, 0, 3);
 
         assertThat(page.total()).isEqualTo(13);
         assertThat(page.items()).hasSize(3);

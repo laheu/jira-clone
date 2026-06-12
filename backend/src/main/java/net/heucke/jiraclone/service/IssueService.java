@@ -2,6 +2,7 @@ package net.heucke.jiraclone.service;
 
 import net.heucke.jiraclone.api.Dtos.AttachmentDto;
 import net.heucke.jiraclone.api.Dtos.CommentDto;
+import net.heucke.jiraclone.api.Dtos.CustomFieldDto;
 import net.heucke.jiraclone.api.Dtos.IssueDetailDto;
 import net.heucke.jiraclone.api.Dtos.IssueSummaryDto;
 import net.heucke.jiraclone.api.Dtos.PageDto;
@@ -11,6 +12,8 @@ import net.heucke.jiraclone.api.Dtos.TypeRef;
 import net.heucke.jiraclone.api.Dtos.UserRef;
 import net.heucke.jiraclone.repo.AttachmentRepository;
 import net.heucke.jiraclone.repo.CommentRepository;
+import net.heucke.jiraclone.repo.CustomFieldRepository;
+import net.heucke.jiraclone.repo.CustomFieldRepository.CustomFieldValueRow;
 import net.heucke.jiraclone.repo.HierarchyRepository;
 import net.heucke.jiraclone.repo.IssueRepository;
 import net.heucke.jiraclone.repo.Rows.AttachmentRow;
@@ -37,33 +40,43 @@ public class IssueService {
 
     private static final Pattern ISSUE_KEY = Pattern.compile("([A-Za-z][A-Za-z0-9_]*)-(\\d+)");
 
+    /** Internal/system custom fields that must not show up as business fields. */
+    private static final Set<String> HIDDEN_CUSTOM_FIELD_TYPES = Set.of(
+            "com.pyxis.greenhopper.jira:gh-epic-link",
+            "com.pyxis.greenhopper.jira:gh-lexo-rank",
+            "com.pyxis.greenhopper.jira:gh-sprint",
+            "com.pyxis.greenhopper.jira:gh-global-rank");
+
     private final IssueRepository issueRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final WorkflowService workflowService;
     private final HierarchyRepository hierarchyRepository;
     private final AttachmentRepository attachmentRepository;
+    private final CustomFieldRepository customFieldRepository;
 
     public IssueService(IssueRepository issueRepository,
                         CommentRepository commentRepository,
                         UserRepository userRepository,
                         WorkflowService workflowService,
                         HierarchyRepository hierarchyRepository,
-                        AttachmentRepository attachmentRepository) {
+                        AttachmentRepository attachmentRepository,
+                        CustomFieldRepository customFieldRepository) {
         this.issueRepository = issueRepository;
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
         this.workflowService = workflowService;
         this.hierarchyRepository = hierarchyRepository;
         this.attachmentRepository = attachmentRepository;
+        this.customFieldRepository = customFieldRepository;
     }
 
     public PageDto<IssueSummaryDto> search(String projectKey, String statusId, String typeId, String text,
-                                           int page, int size) {
+                                           String sort, boolean descending, int page, int size) {
         int safeSize = Math.clamp(size, 1, 100);
         int safePage = Math.max(page, 0);
         List<IssueRow> rows = issueRepository.search(projectKey, statusId, typeId, text,
-                safePage * safeSize, safeSize);
+                sort, descending, safePage * safeSize, safeSize);
         long total = issueRepository.count(projectKey, statusId, typeId, text);
 
         Set<String> userKeys = new HashSet<>();
@@ -94,6 +107,11 @@ public class IssueService {
                 .orElse(null);
         List<IssueRow> childRows = issueRepository.findByIds(hierarchyRepository.findChildIds(row.id()));
 
+        List<CustomFieldValueRow> customFieldRows = customFieldRepository.findValues(row.id()).stream()
+                .filter(cf -> !HIDDEN_CUSTOM_FIELD_TYPES.contains(cf.typeKey())
+                        && (cf.typeKey() == null || !cf.typeKey().startsWith("com.atlassian.jpo")))
+                .toList();
+
         Set<String> userKeys = new HashSet<>();
         userKeys.add(row.assigneeKey());
         userKeys.add(row.reporterKey());
@@ -103,6 +121,9 @@ public class IssueService {
         if (parentRow != null) {
             userKeys.add(parentRow.assigneeKey());
         }
+        customFieldRows.stream()
+                .filter(cf -> cf.typeKey() != null && cf.typeKey().contains("userpicker"))
+                .forEach(cf -> userKeys.add(cf.stringValue()));
         Map<String, UserRow> users = userRepository.resolve(userKeys);
 
         return new IssueDetailDto(
@@ -130,7 +151,63 @@ public class IssueService {
                 attachments.stream()
                         .map(a -> new AttachmentDto(a.id(), a.filename(), a.mimeType(), a.fileSize(),
                                 toUserRef(a.authorKey(), users), toInstant(a.created())))
-                        .toList());
+                        .toList(),
+                toCustomFields(customFieldRows, users));
+    }
+
+    /**
+     * Groups raw custom field values by field (multi-value fields produce
+     * several rows) and renders each value: select options are looked up in
+     * customfieldoption, user keys become display names, dates and numbers
+     * are formatted.
+     */
+    private List<CustomFieldDto> toCustomFields(List<CustomFieldValueRow> rows, Map<String, UserRow> users) {
+        Set<Long> selectFieldIds = rows.stream()
+                .filter(cf -> isSelectType(cf.typeKey()))
+                .map(CustomFieldValueRow::fieldId)
+                .collect(java.util.stream.Collectors.toSet());
+        Map<String, String> options = customFieldRepository.findOptions(selectFieldIds);
+
+        Map<Long, CustomFieldDto> byField = new java.util.LinkedHashMap<>();
+        for (CustomFieldValueRow cf : rows) {
+            String value = renderValue(cf, options, users);
+            if (value == null || value.isBlank()) {
+                continue;
+            }
+            byField.merge(cf.fieldId(), new CustomFieldDto(cf.fieldId(), cf.name(), value),
+                    (a, b) -> new CustomFieldDto(a.id(), a.name(), a.value() + ", " + b.value()));
+        }
+        return List.copyOf(byField.values());
+    }
+
+    private static boolean isSelectType(String typeKey) {
+        return typeKey != null
+                && (typeKey.contains("select") || typeKey.contains("radiobuttons") || typeKey.contains("checkboxes"));
+    }
+
+    private static String renderValue(CustomFieldValueRow cf, Map<String, String> options,
+                                      Map<String, UserRow> users) {
+        if (cf.dateValue() != null) {
+            var dateTime = cf.dateValue().toLocalDateTime();
+            return dateTime.toLocalTime().equals(java.time.LocalTime.MIDNIGHT)
+                    ? dateTime.toLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                    : dateTime.format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+        }
+        if (cf.numberValue() != null) {
+            return cf.numberValue().stripTrailingZeros().toPlainString();
+        }
+        String raw = cf.stringValue() != null ? cf.stringValue() : cf.textValue();
+        if (raw == null) {
+            return null;
+        }
+        if (isSelectType(cf.typeKey())) {
+            return options.getOrDefault(raw, raw);
+        }
+        if (cf.typeKey() != null && cf.typeKey().contains("userpicker")) {
+            UserRow user = users.get(raw);
+            return user != null ? user.displayName() : raw;
+        }
+        return raw;
     }
 
     private static IssueSummaryDto toSummary(IssueRow row, Map<String, UserRow> users) {

@@ -54,6 +54,10 @@ public final class Dtos {
                                 UserRef author, Instant created) {
     }
 
+    /** A business custom field with its display-ready value. */
+    public record CustomFieldDto(long id, String name, String value) {
+    }
+
     public record IssueDetailDto(String key, String summary, String description,
                                  TypeRef type, StatusRef status, PriorityRef priority,
                                  String resolution, UserRef assignee, UserRef reporter,
@@ -61,7 +65,8 @@ public final class Dtos {
                                  Instant created, Instant updated, LocalDate dueDate, Instant resolutionDate,
                                  List<CommentDto> comments, List<TransitionDto> transitions,
                                  IssueSummaryDto parent, List<IssueSummaryDto> children,
-                                 List<AttachmentDto> attachments) {
+                                 List<AttachmentDto> attachments,
+                                 List<CustomFieldDto> customFields) {
     }
 
     public record PageDto<T>(List<T> items, int page, int size, long total) {

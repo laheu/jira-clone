@@ -11,9 +11,13 @@ Datenbank aus.
   sieht alle Projekte und Vorgänge – Jira-Berechtigungsschemata werden nicht ausgewertet.
 - **Projektübersicht** mit Projektleitung und Vorgangsanzahl
 - **Vorgangsliste** pro Projekt mit Filtern (Status, Typ – nur die im Projekt tatsächlich
-  vorkommenden Werte), Volltextsuche auf der Zusammenfassung und Paginierung
+  vorkommenden Werte), Volltextsuche auf der Zusammenfassung, sortierbaren Spalten und
+  Paginierung
 - **Vorgangsdetails**: Beschreibung, Bearbeiter/Autor (aufgelöst über `app_user`/`cwd_user`),
   Priorität, Lösung, Labels, Kommentare
+- **Custom Fields**: fachliche benutzerdefinierte Felder werden in der Detailansicht
+  angezeigt; Auswahllisten-Optionen (`customfieldoption`), User-Picker und Datumsfelder
+  werden aufgelöst. Interne Felder (Rank, Sprint, Epic/Parent Link) bleiben ausgeblendet.
 - **Hierarchie** (z. B. Initiative > Epic > Story): übergeordneter Vorgang und Liste der
   untergeordneten Vorgänge. Ausgewertet werden Epic-Story-/Subtask-Issue-Links sowie die
   Custom Fields „Epic Link" und „Parent Link" (Advanced Roadmaps).

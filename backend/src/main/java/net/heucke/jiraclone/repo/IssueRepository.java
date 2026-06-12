@@ -59,6 +59,18 @@ public class IssueRepository {
             rs.getTimestamp("resolutiondate"),
             toLong(rs.getObject("workflow_id")));
 
+    /** Whitelist of sortable columns; anything else falls back to "updated". */
+    private static final java.util.Map<String, String> SORT_COLUMNS = java.util.Map.of(
+            "key", "i.issuenum",
+            "summary", "LOWER(i.summary)",
+            "type", "t.pname",
+            "status", "s.pname",
+            "priority", "pr.sequence",
+            "assignee", "LOWER(i.assignee)",
+            "created", "i.created",
+            "updated", "i.updated",
+            "duedate", "i.duedate");
+
     private final JdbcTemplate jdbc;
 
     public IssueRepository(JdbcTemplate jdbc) {
@@ -66,11 +78,13 @@ public class IssueRepository {
     }
 
     public List<IssueRow> search(String projectKey, String statusId, String typeId, String text,
-                                 int offset, int limit) {
+                                 String sortField, boolean descending, int offset, int limit) {
         StringBuilder sql = new StringBuilder(SELECT);
         List<Object> params = new ArrayList<>();
         appendFilters(sql, params, projectKey, statusId, typeId, text);
-        sql.append(" ORDER BY i.updated DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        String column = SORT_COLUMNS.getOrDefault(sortField, "i.updated");
+        sql.append(" ORDER BY ").append(column).append(descending ? " DESC" : " ASC")
+                .append(" NULLS LAST, i.id OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         params.add(offset);
         params.add(limit);
         return jdbc.query(sql.toString(), MAPPER, params.toArray());

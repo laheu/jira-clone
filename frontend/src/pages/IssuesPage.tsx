@@ -18,6 +18,27 @@ export default function IssuesPage() {
   const [searchInput, setSearchInput] = useState('');
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(0);
+  const [sort, setSort] = useState('updated');
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+
+  const toggleSort = (field: string) => {
+    if (sort === field) {
+      setOrder(order === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSort(field);
+      setOrder('asc');
+    }
+    setPage(0);
+  };
+
+  const SortHeader = ({ field, label }: { field: string; label: string }) => (
+    <th>
+      <button className="th-sort" onClick={() => toggleSort(field)}>
+        {label}
+        {sort === field && <span className="sort-arrow">{order === 'asc' ? '▲' : '▼'}</span>}
+      </button>
+    </th>
+  );
 
   useEffect(() => {
     getProject(projectKey).then(setProject).catch(() => setProject(null));
@@ -27,10 +48,10 @@ export default function IssuesPage() {
 
   useEffect(() => {
     setIssues(null);
-    getIssues(projectKey, { status, type, q: query, page, size: PAGE_SIZE })
+    getIssues(projectKey, { status, type, q: query, sort, order, page, size: PAGE_SIZE })
       .then(setIssues)
       .catch(() => setError('Vorgänge konnten nicht geladen werden.'));
-  }, [projectKey, status, type, query, page]);
+  }, [projectKey, status, type, query, sort, order, page]);
 
   const submitSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -97,13 +118,13 @@ export default function IssuesPage() {
         <table className="issue-table">
           <thead>
             <tr>
-              <th>Schlüssel</th>
-              <th>Typ</th>
-              <th>Zusammenfassung</th>
-              <th>Status</th>
-              <th>Priorität</th>
-              <th>Bearbeiter</th>
-              <th>Aktualisiert</th>
+              <SortHeader field="key" label="Schlüssel" />
+              <SortHeader field="type" label="Typ" />
+              <SortHeader field="summary" label="Zusammenfassung" />
+              <SortHeader field="status" label="Status" />
+              <SortHeader field="priority" label="Priorität" />
+              <SortHeader field="assignee" label="Bearbeiter" />
+              <SortHeader field="updated" label="Aktualisiert" />
             </tr>
           </thead>
           <tbody>

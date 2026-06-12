@@ -51,6 +51,8 @@ export interface IssueQuery {
   status?: string;
   type?: string;
   q?: string;
+  sort?: string;
+  order?: 'asc' | 'desc';
   page?: number;
   size?: number;
 }
@@ -60,6 +62,8 @@ export const getIssues = (projectKey: string, query: IssueQuery) => {
   if (query.status) params.set('status', query.status);
   if (query.type) params.set('type', query.type);
   if (query.q) params.set('q', query.q);
+  params.set('sort', query.sort ?? 'updated');
+  params.set('order', query.order ?? 'desc');
   params.set('page', String(query.page ?? 0));
   params.set('size', String(query.size ?? 25));
   return request<Page<IssueSummary>>(

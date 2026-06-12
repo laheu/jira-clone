@@ -65,6 +65,12 @@ export interface Attachment {
   created: string;
 }
 
+export interface CustomField {
+  id: number;
+  name: string;
+  value: string;
+}
+
 export interface IssueDetail extends IssueSummary {
   description: string | null;
   resolution: string | null;
@@ -76,6 +82,7 @@ export interface IssueDetail extends IssueSummary {
   parent: IssueSummary | null;
   children: IssueSummary[];
   attachments: Attachment[];
+  customFields: CustomField[];
 }
 
 export interface Page<T> {
