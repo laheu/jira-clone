@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ApiError, attachmentUrl, getIssue } from '../api';
+import { ApiError, attachmentUrl, getIssue, getProjects } from '../api';
 import {
   BodyText,
   PriorityLabel,
@@ -15,6 +15,7 @@ import type { IssueDetail } from '../types';
 export default function IssueDetailPage() {
   const { issueKey = '' } = useParams();
   const [issue, setIssue] = useState<IssueDetail | null>(null);
+  const [projectKeys, setProjectKeys] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,10 +31,20 @@ export default function IssueDetailPage() {
       );
   }, [issueKey]);
 
+  // Known project keys so issue references like DEMO-7 become links (and
+  // lookalikes such as HTTP-500 stay plain text).
+  useEffect(() => {
+    getProjects()
+      .then((projects) => setProjectKeys(projects.map((p) => p.key)))
+      .catch(() => setProjectKeys([]));
+  }, []);
+
   if (error) return <div className="error-box">{error}</div>;
   if (!issue) return <div className="page-loading">Lade Vorgang…</div>;
 
   const projectKey = issue.key.split('-')[0];
+  const sidebarFields = issue.customFields.filter((f) => !f.multiline);
+  const textFields = issue.customFields.filter((f) => f.multiline);
 
   return (
     <>
@@ -64,11 +75,26 @@ export default function IssueDetailPage() {
           <section>
             <h2>Beschreibung</h2>
             {issue.description ? (
-              <BodyText text={issue.description} attachments={issue.attachments} />
+              <BodyText
+                text={issue.description}
+                attachments={issue.attachments}
+                projectKeys={projectKeys}
+              />
             ) : (
               <p className="muted">Keine Beschreibung vorhanden.</p>
             )}
           </section>
+
+          {textFields.map((field) => (
+            <section key={field.id}>
+              <h2>{field.name}</h2>
+              <BodyText
+                text={field.value}
+                attachments={issue.attachments}
+                projectKeys={projectKeys}
+              />
+            </section>
+          ))}
 
           {issue.children.length > 0 && (
             <section>
@@ -157,7 +183,12 @@ export default function IssueDetailPage() {
                       </strong>
                       <span className="muted">{formatDateTime(comment.created)}</span>
                     </div>
-                    <BodyText text={comment.body} attachments={issue.attachments} className="comment-body" />
+                    <BodyText
+                      text={comment.body}
+                      attachments={issue.attachments}
+                      projectKeys={projectKeys}
+                      className="comment-body"
+                    />
                   </li>
                 ))}
               </ul>
@@ -201,7 +232,7 @@ export default function IssueDetailPage() {
                 </dd>
               </>
             )}
-            {issue.customFields.map((field) => (
+            {sidebarFields.map((field) => (
               <Fragment key={field.id}>
                 <dt>{field.name}</dt>
                 <dd>{field.value}</dd>

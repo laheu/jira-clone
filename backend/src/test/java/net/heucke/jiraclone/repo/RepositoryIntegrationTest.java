@@ -162,6 +162,31 @@ class RepositoryIntegrationTest {
     }
 
     @Test
+    void customFieldsAreFilteredByProjectContext() {
+        // "Kundennummer" (10703) is only configured for project WEB, so it must
+        // not appear on DEMO-2 even though a value exists, but it shows on WEB-3.
+        assertThat(issueService.get("DEMO-2").customFields())
+                .extracting(cf -> cf.name())
+                .doesNotContain("Kundennummer");
+        assertThat(issueService.get("WEB-3").customFields())
+                .extracting(cf -> cf.name() + "=" + cf.value())
+                .contains("Kundennummer=KD-9000");
+    }
+
+    @Test
+    void multilineCustomFieldsAreMarkedAndSortedLast() {
+        // DEMO-3 has Story Points (single line) plus two textarea fields
+        IssueDetailDto issue = issueService.get("DEMO-3");
+
+        assertThat(issue.customFields())
+                .extracting(cf -> cf.name() + "/" + cf.multiline())
+                .containsExactly(
+                        "Story Points/false",
+                        "Akzeptanzkriterien/true",
+                        "Lösungsbeschreibung/true");
+    }
+
+    @Test
     void issueListResolvesAssigneesAndOrdersByUpdated() {
         PageDto<IssueSummaryDto> page = issueService.search("DEMO", null, null, null, "updated", true, 0, 3);
 

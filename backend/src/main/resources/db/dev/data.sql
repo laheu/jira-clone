@@ -213,6 +213,20 @@ INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10705, 'com.atl
 INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10706, 'com.atlassian.jira.plugin.system.customfieldtypes:userpicker', 'Fachlicher Ansprechpartner');
 -- Rank-Feld (gh-lexo-rank) als Beispiel fuer ein internes Feld, das NICHT angezeigt werden soll
 INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10707, 'com.pyxis.greenhopper.jira:gh-lexo-rank', 'Rank');
+-- Mehrzeilige Textfelder, die als eigene Abschnitte unter der Beschreibung erscheinen
+INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10708, 'com.atlassian.jira.plugin.system.customfieldtypes:textarea', 'Akzeptanzkriterien');
+INSERT INTO customfield (id, customfieldtypekey, cfname) VALUES (10709, 'com.atlassian.jira.plugin.system.customfieldtypes:textarea', 'Lösungsbeschreibung');
+
+-- Feld-Kontexte: bestimmen, in welchen Projekten ein Custom Field verwendet wird
+-- (project = NULL bedeutet globaler Kontext)
+INSERT INTO configurationcontext (id, projectcategory, project, customfield, fieldconfigscheme) VALUES (11000, NULL, NULL, 'customfield_10702', NULL);
+INSERT INTO configurationcontext (id, projectcategory, project, customfield, fieldconfigscheme) VALUES (11001, NULL, 10001, 'customfield_10703', NULL);
+INSERT INTO configurationcontext (id, projectcategory, project, customfield, fieldconfigscheme) VALUES (11002, NULL, NULL, 'customfield_10704', NULL);
+INSERT INTO configurationcontext (id, projectcategory, project, customfield, fieldconfigscheme) VALUES (11003, NULL, 10000, 'customfield_10705', NULL);
+INSERT INTO configurationcontext (id, projectcategory, project, customfield, fieldconfigscheme) VALUES (11004, NULL, 10001, 'customfield_10705', NULL);
+INSERT INTO configurationcontext (id, projectcategory, project, customfield, fieldconfigscheme) VALUES (11005, NULL, 10000, 'customfield_10706', NULL);
+INSERT INTO configurationcontext (id, projectcategory, project, customfield, fieldconfigscheme) VALUES (11006, NULL, NULL, 'customfield_10708', NULL);
+INSERT INTO configurationcontext (id, projectcategory, project, customfield, fieldconfigscheme) VALUES (11007, NULL, NULL, 'customfield_10709', NULL);
 
 -- Optionen der Auswahlliste "Umgebung" (Select-Felder speichern die Options-ID in stringvalue)
 INSERT INTO customfieldoption (id, customfield, customfieldconfig, parentoptionid, sequence, customvalue, optiontype, disabled) VALUES (10900, 10702, NULL, NULL, 1, 'Produktion', NULL, 'N');
@@ -227,6 +241,14 @@ INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, 
 INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10807, 20015, 10702, '10901', NULL, NULL, NULL, NULL);
 INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10808, 20008, 10704, NULL, NULL, NULL, TIMESTAMP '2026-09-30 00:00:00', NULL);
 INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10809, 20001, 10707, '0|i0007b:', NULL, NULL, NULL, NULL);
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10810, 20003, 10708, NULL, NULL, '- Filter nach Status und Typ sind kombinierbar
+- Volltextsuche beruecksichtigt die Zusammenfassung
+- Aktive Filter bleiben beim Blaettern erhalten', NULL, NULL);
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10811, 20003, 10709, NULL, NULL, 'Serverseitige Filterung umgesetzt, Details im Wiki: https://wiki.example.com/filter
+Verwandter Bugfix: DEMO-7', NULL, NULL);
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10812, 20005, 10708, NULL, NULL, '- Kommentare chronologisch sortiert
+- Autor und Datum sichtbar', NULL, NULL);
+INSERT INTO customfieldvalue (id, issue, customfield, stringvalue, numbervalue, textvalue, datevalue, valuetype) VALUES (10813, 20015, 10703, 'KD-9000', NULL, NULL, NULL, NULL);
 
 -- ---------------------------------------------------------------- attachments (Dateien liegen unter dev-attachments/)
 INSERT INTO fileattachment (id, issueid, mimetype, filename, created, filesize, author, zip, thumbnailable) VALUES (70001, 20001, 'image/svg+xml', 'screenshot-fehler.svg', TIMESTAMP '2026-05-02 09:15:00', 760, 'anna.schmidt', 0, 1);

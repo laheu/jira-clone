@@ -22,6 +22,7 @@ DROP TABLE IF EXISTS issuelinktype;
 DROP TABLE IF EXISTS customfield;
 DROP TABLE IF EXISTS customfieldvalue;
 DROP TABLE IF EXISTS customfieldoption;
+DROP TABLE IF EXISTS configurationcontext;
 DROP TABLE IF EXISTS fileattachment;
 
 CREATE TABLE project (
@@ -238,6 +239,14 @@ CREATE TABLE customfieldoption (
     customvalue       VARCHAR2(255),
     optiontype        VARCHAR2(60),
     disabled          CHAR(1)
+);
+
+CREATE TABLE configurationcontext (
+    id                NUMBER(18,0) PRIMARY KEY,
+    projectcategory   NUMBER(18,0),
+    project           NUMBER(18,0),
+    customfield       VARCHAR2(255),
+    fieldconfigscheme NUMBER(18,0)
 );
 
 CREATE TABLE fileattachment (

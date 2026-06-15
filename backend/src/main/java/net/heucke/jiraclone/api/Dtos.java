@@ -54,8 +54,12 @@ public final class Dtos {
                                 UserRef author, Instant created) {
     }
 
-    /** A business custom field with its display-ready value. */
-    public record CustomFieldDto(long id, String name, String value) {
+    /**
+     * A business custom field with its display-ready value. {@code multiline}
+     * marks free-text (textarea) fields like acceptance criteria, which the UI
+     * shows as their own section under the description instead of in the sidebar.
+     */
+    public record CustomFieldDto(long id, String name, String value, boolean multiline) {
     }
 
     public record IssueDetailDto(String key, String summary, String description,

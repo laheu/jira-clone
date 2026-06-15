@@ -571,6 +571,11 @@ h2 {
   border-radius: 4px;
 }
 
+.body-link {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
 .comment-body {
   margin: 0;
   white-space: pre-wrap;

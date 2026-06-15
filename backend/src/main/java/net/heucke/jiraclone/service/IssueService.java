@@ -107,9 +107,12 @@ public class IssueService {
                 .orElse(null);
         List<IssueRow> childRows = issueRepository.findByIds(hierarchyRepository.findChildIds(row.id()));
 
+        // Only fields that are actually configured for this project (plus globally scoped ones).
+        Set<Long> projectFieldIds = customFieldRepository.findFieldIdsForProject(row.projectId());
         List<CustomFieldValueRow> customFieldRows = customFieldRepository.findValues(row.id()).stream()
                 .filter(cf -> !HIDDEN_CUSTOM_FIELD_TYPES.contains(cf.typeKey())
-                        && (cf.typeKey() == null || !cf.typeKey().startsWith("com.atlassian.jpo")))
+                        && (cf.typeKey() == null || !cf.typeKey().startsWith("com.atlassian.jpo"))
+                        && projectFieldIds.contains(cf.fieldId()))
                 .toList();
 
         Set<String> userKeys = new HashSet<>();
@@ -174,15 +177,23 @@ public class IssueService {
             if (value == null || value.isBlank()) {
                 continue;
             }
-            byField.merge(cf.fieldId(), new CustomFieldDto(cf.fieldId(), cf.name(), value),
-                    (a, b) -> new CustomFieldDto(a.id(), a.name(), a.value() + ", " + b.value()));
+            boolean multiline = isMultilineType(cf.typeKey());
+            byField.merge(cf.fieldId(), new CustomFieldDto(cf.fieldId(), cf.name(), value, multiline),
+                    (a, b) -> new CustomFieldDto(a.id(), a.name(), a.value() + ", " + b.value(), a.multiline()));
         }
-        return List.copyOf(byField.values());
+        // Single-line fields first (sidebar), multiline sections afterwards.
+        return byField.values().stream()
+                .sorted(java.util.Comparator.comparing(CustomFieldDto::multiline))
+                .toList();
     }
 
     private static boolean isSelectType(String typeKey) {
         return typeKey != null
                 && (typeKey.contains("select") || typeKey.contains("radiobuttons") || typeKey.contains("checkboxes"));
+    }
+
+    private static boolean isMultilineType(String typeKey) {
+        return typeKey != null && typeKey.contains("textarea");
     }
 
     private static String renderValue(CustomFieldValueRow cf, Map<String, String> options,

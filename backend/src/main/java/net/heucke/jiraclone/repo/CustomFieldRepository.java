@@ -9,8 +9,10 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Reads business custom field values of an issue. Select-style fields store
@@ -68,5 +70,32 @@ public class CustomFieldRepository {
                     options.put(rs.getString("id"), rs.getString("customvalue"));
                 });
         return options;
+    }
+
+    /**
+     * Custom field ids that are configured for the given project. A field is
+     * considered in use when it has a {@code configurationcontext} row that is
+     * either global ({@code project IS NULL}) or bound to this project. The
+     * {@code customfield} column stores ids as {@code customfield_<id>}.
+     */
+    public Set<Long> findFieldIdsForProject(long projectId) {
+        Set<Long> ids = new HashSet<>();
+        jdbc.query("""
+                        SELECT customfield FROM configurationcontext
+                        WHERE project = ? OR project IS NULL
+                        """,
+                rs -> {
+                    String raw = rs.getString("customfield");
+                    if (raw != null) {
+                        int underscore = raw.lastIndexOf('_');
+                        try {
+                            ids.add(Long.parseLong(underscore >= 0 ? raw.substring(underscore + 1) : raw));
+                        } catch (NumberFormatException ignored) {
+                            // unexpected context payload, skip
+                        }
+                    }
+                },
+                projectId);
+        return ids;
     }
 }

@@ -69,6 +69,7 @@ export interface CustomField {
   id: number;
   name: string;
   value: string;
+  multiline: boolean;
 }
 
 export interface IssueDetail extends IssueSummary {

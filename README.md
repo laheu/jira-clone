@@ -17,7 +17,14 @@ Datenbank aus.
   Priorität, Lösung, Labels, Kommentare
 - **Custom Fields**: fachliche benutzerdefinierte Felder werden in der Detailansicht
   angezeigt; Auswahllisten-Optionen (`customfieldoption`), User-Picker und Datumsfelder
-  werden aufgelöst. Interne Felder (Rank, Sprint, Epic/Parent Link) bleiben ausgeblendet.
+  werden aufgelöst. Es werden nur Felder gezeigt, die im jeweiligen Projekt konfiguriert
+  sind (`configurationcontext`); interne Felder (Rank, Sprint, Epic/Parent Link) bleiben
+  ausgeblendet. Mehrzeilige Textfelder (z. B. Akzeptanzkriterien, Lösungsbeschreibung)
+  erscheinen als eigene Abschnitte unter der Beschreibung.
+- **Klickbare Links**: URLs, Jira-Wiki-Links (`[Text|URL]`) und Vorgangs-Referenzen
+  (z. B. `DEMO-7`) in Beschreibung, Kommentaren und Textfeldern werden als Links dargestellt.
+- **Projektsuche**: die Projektübersicht ist über Schlüssel, Name, Beschreibung und Leitung
+  durchsuchbar.
 - **Hierarchie** (z. B. Initiative > Epic > Story): übergeordneter Vorgang und Liste der
   untergeordneten Vorgänge. Ausgewertet werden Epic-Story-/Subtask-Issue-Links sowie die
   Custom Fields „Epic Link" und „Parent Link" (Advanced Roadmaps).
