@@ -1,0 +1,4 @@
+2026-05-02 09:11:58 ERROR [http-nio-8080-exec-3] AuthFilter -
+java.lang.NullPointerException: Cannot invoke "User.getName()" because "user" is null
+    at com.example.auth.AuthFilter.doFilter(AuthFilter.java:42)
+    at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:178)

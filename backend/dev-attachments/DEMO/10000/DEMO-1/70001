@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="240" viewBox="0 0 480 240">
+  <rect width="480" height="240" fill="#fff" stroke="#dfe1e6"/>
+  <rect x="0" y="0" width="480" height="40" fill="#0747a6"/>
+  <text x="16" y="26" font-family="sans-serif" font-size="16" fill="#fff">Login</text>
+  <rect x="40" y="70" width="400" height="60" fill="#ffebe6" stroke="#ffbdad" rx="4"/>
+  <text x="60" y="98" font-family="sans-serif" font-size="15" fill="#bf2600">HTTP ERROR 500</text>
+  <text x="60" y="118" font-family="sans-serif" font-size="12" fill="#bf2600">java.lang.NullPointerException at AuthFilter.doFilter</text>
+  <text x="40" y="180" font-family="sans-serif" font-size="12" fill="#6b778c">Screenshot aus dem Fehlerbericht DEMO-1 (Demo-Anhang)</text>
+</svg>
